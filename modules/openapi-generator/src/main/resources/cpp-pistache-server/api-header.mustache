@@ -26,14 +26,14 @@ namespace {{apiNamespace}}
 
 class {{declspec}} {{classname}} : public ApiBase {
 public:
-    explicit {{classname}}(const std::shared_ptr<Pistache::Rest::Router>& rtr);
+    explicit {{classname}}();
     ~{{classname}}() override = default;
-    void init() override;
+    void init(Pistache::Rest::Router& rtr) override;
 
     static const std::string base;
 
 private:
-    void setupRoutes();
+    void setupRoutes(Pistache::Rest::Router& rtr);
 
     {{#operation}}
     void {{operationIdSnakeCase}}_handler(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter response);
@@ -79,7 +79,7 @@ private:
     {{#allParams}}
     /// <param name="{{paramName}}">{{description}}{{^required}} (optional{{#defaultValue}}, default to {{.}}{{/defaultValue}}){{/required}}</param>
     {{/allParams}}
-    virtual void {{operationIdSnakeCase}}({{#allParams}}const {{#isModel}}{{^isOptional}}{{modelNamespace}}::{{/isOptional}}{{/isModel}}{{{dataType}}} &{{paramName}}{{^-last}}, {{/-last}}{{/allParams}}{{#hasParams}}, {{/hasParams}}Pistache::Http::ResponseWriter &response) = 0;
+    virtual {{returnType}} {{operationIdSnakeCase}}({{#allParams}}const {{#isModel}}{{^isOptional}}{{modelNamespace}}::{{/isOptional}}{{/isModel}}{{{dataType}}} &{{paramName}}{{^-last}}, {{/-last}}{{/allParams}}) = 0;
     {{/vendorExtensions.x-codegen-pistache-is-parsing-supported}}
     {{^vendorExtensions.x-codegen-pistache-is-parsing-supported}}
     virtual void {{operationIdSnakeCase}}(const Pistache::Rest::Request &request, Pistache::Http::ResponseWriter &response) = 0;

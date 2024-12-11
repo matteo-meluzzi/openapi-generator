@@ -13,24 +13,24 @@ using namespace {{modelNamespace}};{{/hasModelImport}}
 
 const std::string {{classname}}::base = "{{basePathWithoutHost}}";
 
-{{classname}}::{{classname}}(const std::shared_ptr<Pistache::Rest::Router>& rtr)
-    : ApiBase(rtr)
+{{classname}}::{{classname}}()
+    : ApiBase()
 {
 }
 
-void {{classname}}::init() {
-    setupRoutes();
+void {{classname}}::init(Pistache::Rest::Router& rtr) {
+    setupRoutes(rtr);
 }
 
-void {{classname}}::setupRoutes() {
+void {{classname}}::setupRoutes(Pistache::Rest::Router& rtr) {
     using namespace Pistache::Rest;
 
     {{#operation}}
-    Routes::{{httpMethod}}(*router, base + "{{{vendorExtensions.x-codegen-pistache-path}}}", Routes::bind(&{{classname}}::{{operationIdSnakeCase}}_handler, this));
+    Routes::{{httpMethod}}(rtr, base + "{{{vendorExtensions.x-codegen-pistache-path}}}", Routes::bind(&{{classname}}::{{operationIdSnakeCase}}_handler, this));
     {{/operation}}
 
     // Default handler, called when a route is not found
-    router->addCustomHandler(Routes::bind(&{{classname}}::{{classnameSnakeLowerCase}}_default_handler, this));
+    rtr.addCustomHandler(Routes::bind(&{{classname}}::{{classnameSnakeLowerCase}}_default_handler, this));
 }
 
 void {{classname}}::handleParsingException(const std::exception& ex, Pistache::Http::ResponseWriter &response) const noexcept
@@ -121,7 +121,8 @@ void {{classname}}::{{operationIdSnakeCase}}_handler(const Pistache::Rest::Reque
     try {
     {{/bodyParam}}
     {{/hasBodyParam}}
-        this->{{operationIdSnakeCase}}({{#allParams}}{{paramName}}{{^-last}}, {{/-last}}{{/allParams}}{{#hasParams}}, {{/hasParams}}response);
+        auto result = this->{{operationIdSnakeCase}}({{#allParams}}{{paramName}}{{^-last}}, {{/-last}}{{/allParams}});
+        response.send(Pistache::Http::Code::Ok, result.to_json().dump());
     {{/vendorExtensions.x-codegen-pistache-is-parsing-supported}}
     {{^vendorExtensions.x-codegen-pistache-is-parsing-supported}}
     try {
